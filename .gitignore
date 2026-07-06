@@ -1,0 +1,25 @@
+# 系统文件
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# 临时文件
+*.tar
+*.tmp
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 环境
+.env
+.env.local
+
+# K3s/k3d 本地配置
+kubeconfig*
+
+# 非项目文件
+clash-verge-auto-update-rules.yaml
