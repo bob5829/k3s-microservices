@@ -1,0 +1,63 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [master]
+
+env:
+  REGISTRY: ghcr.io
+  NODE_IMAGE: ghcr.io/bob5829/node-app
+  PY_IMAGE: ghcr.io/bob5829/py-app
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      # 1. 检出代码
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. 登录 GHCR
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 3. 构建 + 推送 Node 镜像
+      - name: Build & Push Node App
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/node-app
+          push: true
+          tags: ${{ env.NODE_IMAGE }}:latest
+
+      # 4. 构建 + 推送 Python 镜像
+      - name: Build & Push Python App
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/py-app
+          push: true
+          tags: ${{ env.PY_IMAGE }}:latest
+
+      # 5. 配置 kubectl
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Set kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+
+      # 6. 滚动更新到 K3s
+      - name: Deploy to K3s
+        run: |
+          kubectl apply -f k8s/
+          kubectl rollout restart deployment/node-app deployment/py-app
+          kubectl rollout status deployment/node-app --timeout=120s
+          kubectl rollout status deployment/py-app --timeout=120s

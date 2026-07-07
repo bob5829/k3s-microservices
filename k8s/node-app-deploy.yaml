@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
         - name: node-app
-          image: node-app:latest
-          imagePullPolicy: IfNotPresent
+          image: ghcr.io/bob5829/node-app:v1
+          imagePullPolicy: Always
           ports:
             - containerPort: 3000
           livenessProbe:

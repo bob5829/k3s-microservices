@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
         - name: py-app
-          image: py-app:latest
-          imagePullPolicy: IfNotPresent
+          image: ghcr.io/bob5829/py-app:v1
+          imagePullPolicy: Always
           ports:
             - containerPort: 5000
           env:
